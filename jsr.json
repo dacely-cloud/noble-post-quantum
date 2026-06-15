@@ -1,5 +1,5 @@
 {
-  "name": "@noble/post-quantum",
+  "name": "@dacely/noble-post-quantum",
   "version": "0.6.1",
   "exports": {
     ".": "./src/index.ts",
@@ -7,8 +7,10 @@
     "./falcon.js": "./src/falcon.ts",
     "./hybrid.js": "./src/hybrid.ts",
     "./ml-dsa.js": "./src/ml-dsa.ts",
+    "./ml-dsa-primitives.js": "./src/ml-dsa-primitives.ts",
     "./ml-kem.js": "./src/ml-kem.ts",
     "./slh-dsa.js": "./src/slh-dsa.ts",
+    "./threshold-ml-dsa.js": "./src/threshold-ml-dsa.ts",
     "./utils.js": "./src/utils.ts"
   },
   "imports": {

@@ -1,7 +1,7 @@
 {
-  "name": "@noble/post-quantum",
+  "name": "@dacely/noble-post-quantum",
   "version": "0.6.1",
-  "description": "Auditable & minimal JS implementation of post-quantum cryptography: FIPS 203, 204, 205, Falcon",
+  "description": "Auditable & minimal JS implementation of post-quantum cryptography: FIPS 203, 204, 205, Falcon, plus Threshold ML-DSA (DKG)",
   "files": [
     "*.js",
     "*.js.map",
@@ -40,8 +40,10 @@
     "./falcon.js": "./falcon.js",
     "./hybrid.js": "./hybrid.js",
     "./ml-dsa.js": "./ml-dsa.js",
+    "./ml-dsa-primitives.js": "./ml-dsa-primitives.js",
     "./ml-kem.js": "./ml-kem.js",
     "./slh-dsa.js": "./slh-dsa.js",
+    "./threshold-ml-dsa.js": "./threshold-ml-dsa.js",
     "./utils.js": "./utils.js"
   },
   "engines": {
@@ -60,6 +62,9 @@
     "falcon",
     "xwing",
     "kitchensink",
+    "threshold",
+    "threshold-ml-dsa",
+    "dkg",
     "pqc",
     "post-quantum",
     "public-key",
@@ -67,11 +72,13 @@
     "noble",
     "cryptography"
   ],
-  "homepage": "https://paulmillr.com/noble/",
-  "funding": "https://paulmillr.com/funding/",
+  "homepage": "https://github.com/dacely-cloud/noble-post-quantum#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/paulmillr/noble-post-quantum.git"
+    "url": "git+https://github.com/dacely-cloud/noble-post-quantum.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dacely-cloud/noble-post-quantum/issues"
   },
   "type": "module",
   "main": "index.js",

@@ -1,4 +1,4 @@
-# noble-post-quantum
+# @dacely/noble-post-quantum
 
 Auditable & minimal JS implementation of post-quantum public-key cryptography.
 
@@ -9,8 +9,18 @@ Auditable & minimal JS implementation of post-quantum public-key cryptography.
 - 🔋 ML-DSA & CRYSTALS-Dilithium: lattice-based signatures from FIPS-204
 - 🐈 SLH-DSA & SPHINCS+: hash-based Winternitz signatures from FIPS-205
 - 🦅 Falcon: lattice-based signatures from Falcon Round 3
+- 🧊 Threshold ML-DSA: distributed key generation (DKG) & t-of-n threshold signing (Permafrost)
 - 🍡 Hybrid algorithms, combining classic & post-quantum: Concrete, XWing, KitchenSink
 - 🪶 16KB (gzipped) for everything, including bundled hashes & curves
+
+> [!NOTE]
+> This is a **fork of [paulmillr/noble-post-quantum](https://github.com/paulmillr/noble-post-quantum)**,
+> maintained by [Dacely Cloud](https://github.com/dacely-cloud). It tracks the upstream
+> official release (currently `0.6.1`, including its Mar/Apr-2026 self-audit) and adds a
+> **Threshold ML-DSA** module (distributed key generation + threshold signing).
+>
+> The Threshold ML-DSA implementation ("Permafrost") was contributed by
+> **[btc-vision](https://github.com/btc-vision)** — see the [contribution notice](#contributors--credits).
 
 > [!IMPORTANT]
 > NIST published [IR 8547](https://nvlpubs.nist.gov/nistpubs/ir/2024/NIST.IR.8547.ipd.pdf),
@@ -38,9 +48,9 @@ Auditable & minimal JS implementation of post-quantum public-key cryptography.
 
 ## Usage
 
-> `npm install @noble/post-quantum`
+> `npm install @dacely/noble-post-quantum`
 
-> `deno add jsr:@noble/post-quantum`
+> `deno add jsr:@dacely/noble-post-quantum`
 
 We support all major platforms and runtimes.
 For React Native, you may need a
@@ -49,9 +59,9 @@ A standalone file
 [noble-post-quantum.js](https://github.com/paulmillr/noble-post-quantum/releases) is also available.
 
 ```js
-// import * from '@noble/post-quantum'; // Error: use sub-imports instead
-import { ml_kem512, ml_kem768, ml_kem1024 } from '@noble/post-quantum/ml-kem.js';
-import { ml_dsa44, ml_dsa65, ml_dsa87 } from '@noble/post-quantum/ml-dsa.js';
+// import * from '@dacely/noble-post-quantum'; // Error: use sub-imports instead
+import { ml_kem512, ml_kem768, ml_kem1024 } from '@dacely/noble-post-quantum/ml-kem.js';
+import { ml_dsa44, ml_dsa65, ml_dsa87 } from '@dacely/noble-post-quantum/ml-dsa.js';
 import {
   slh_dsa_sha2_128f,
   slh_dsa_sha2_128s,
@@ -65,33 +75,35 @@ import {
   slh_dsa_shake_192s,
   slh_dsa_shake_256f,
   slh_dsa_shake_256s,
-} from '@noble/post-quantum/slh-dsa.js';
+} from '@dacely/noble-post-quantum/slh-dsa.js';
 import {
   falcon512, falcon512padded, falcon1024, falcon1024padded,
-} from '@noble/post-quantum/falcon.js';
+} from '@dacely/noble-post-quantum/falcon.js';
 import {
   ml_kem768_x25519, ml_kem768_p256, ml_kem1024_p384,
   KitchenSink_ml_kem768_x25519, XWing,
   QSF_ml_kem768_p256, QSF_ml_kem1024_p384,
-} from '@noble/post-quantum/hybrid.js';
+} from '@dacely/noble-post-quantum/hybrid.js';
 ```
 
 - [ML-KEM / Kyber](#ml-kem--kyber-shared-secrets)
 - [ML-DSA / Dilithium](#ml-dsa--dilithium-signatures)
 - [SLH-DSA / SPHINCS+](#slh-dsa--sphincs-signatures)
 - [Falcon](#falcon-signatures)
+- [Threshold ML-DSA (DKG & threshold signing)](#threshold-ml-dsa-dkg--threshold-signing)
 - [hybrid: XWing, KitchenSink and others](#hybrid-xwing-kitchensink-and-others)
 - [What should I use?](#what-should-i-use)
 - [Security](#security)
 - [Speed](#speed)
 - [Contributing & testing](#contributing--testing)
+- [Contributors & credits](#contributors--credits)
 - [License](#license)
 
 ### ML-KEM / Kyber shared secrets
 
 ```ts
-import { ml_kem512, ml_kem768, ml_kem1024 } from '@noble/post-quantum/ml-kem.js';
-import { randomBytes } from '@noble/post-quantum/utils.js';
+import { ml_kem512, ml_kem768, ml_kem1024 } from '@dacely/noble-post-quantum/ml-kem.js';
+import { randomBytes } from '@dacely/noble-post-quantum/utils.js';
 import { notDeepStrictEqual } from 'node:assert';
 const seed = randomBytes(64); // seed is optional
 const aliceKeys = ml_kem768.keygen(seed);
@@ -128,8 +140,8 @@ Old, incompatible version (Kyber) is not provided. Open an issue if you need it.
 ### ML-DSA / Dilithium signatures
 
 ```ts
-import { ml_dsa44, ml_dsa65, ml_dsa87 } from '@noble/post-quantum/ml-dsa.js';
-import { randomBytes } from '@noble/post-quantum/utils.js';
+import { ml_dsa44, ml_dsa65, ml_dsa87 } from '@dacely/noble-post-quantum/ml-dsa.js';
+import { randomBytes } from '@dacely/noble-post-quantum/utils.js';
 const seed = randomBytes(32); // seed is optional
 const keys = ml_dsa65.keygen(seed);
 const msg = new TextEncoder().encode('hello noble');
@@ -157,7 +169,7 @@ import {
   slh_dsa_shake_192s,
   slh_dsa_shake_256f,
   slh_dsa_shake_256s,
-} from '@noble/post-quantum/slh-dsa.js';
+} from '@dacely/noble-post-quantum/slh-dsa.js';
 
 const keys2 = sph.keygen();
 const msg2 = new TextEncoder().encode('hello noble');
@@ -176,8 +188,8 @@ SLH-DSA is slow: see [benchmarks](#speed) for key size & speed.
 ### Falcon signatures
 
 ```ts
-import { falcon512, falcon1024 } from '@noble/post-quantum/falcon.js';
-import { randomBytes } from '@noble/post-quantum/utils.js';
+import { falcon512, falcon1024 } from '@dacely/noble-post-quantum/falcon.js';
+import { randomBytes } from '@dacely/noble-post-quantum/utils.js';
 const seed3 = randomBytes(48); // seed is optional
 const keys3 = falcon512.keygen(seed3);
 const msg3 = new TextEncoder().encode('hello noble');
@@ -196,6 +208,50 @@ Lattice-based digital signature algorithm, submitted to NIST PQC Round 3 ([websi
 - `falcon512padded`, `falcon1024padded`: fixed-length detached signatures
 - `attached.seal(...)` / `attached.open(...)`: attached-signature API for Round 3 vectors and interop
 
+### Threshold ML-DSA (DKG & threshold signing)
+
+```ts
+import { ml_dsa44 } from '@dacely/noble-post-quantum/ml-dsa.js';
+import { ThresholdMLDSA } from '@dacely/noble-post-quantum/threshold-ml-dsa.js';
+
+// 2-of-3 threshold at ML-DSA-44 (also supports 65, 87)
+const th = ThresholdMLDSA.create(44, 2, 3);
+
+// Trusted-dealer key generation (see examples/ for full distributed DKG)
+const { publicKey, shares } = th.keygen();
+
+// Any T of N parties can sign together
+const msg = new TextEncoder().encode('hello threshold');
+const sig = th.sign(msg, publicKey, [shares[0], shares[2]]);
+
+// The result is a STANDARD FIPS-204 signature — verifiers don't need to
+// know it was threshold-produced.
+const isValid = ml_dsa44.verify(sig, msg, publicKey); // true
+```
+
+`threshold-ml-dsa.js` implements **t-of-n threshold ML-DSA** ("Permafrost"): either a
+trusted-dealer `keygen()` or a fully **distributed key generation (DKG)** protocol
+(`Round1State` / `Round2State` and the multi-phase DKG API), followed by a round-based
+threshold signing protocol. Output signatures are byte-compatible standard FIPS-204
+ML-DSA signatures, so verification uses the ordinary `ml_dsa44/65/87.verify()`.
+
+The threshold scheme is built on `ml-dsa-primitives.js` — an RFC-faithful, reusable
+extraction of the FIPS-204 polynomial primitives. (The standard one-shot `ml-dsa.js`
+keeps upstream's optimized internals, which are sound for the standard signing flow but
+not intended for general primitive reuse; the threshold layer therefore relies on the
+dedicated primitives module.)
+
+See [`docs/threshold-ml-dsa-whitepaper.md`](docs/threshold-ml-dsa-whitepaper.md),
+[`docs/distributed-dkg-plan.md`](docs/distributed-dkg-plan.md), the
+[Permafrost whitepaper (PDF)](https://github.com/btc-vision/noble-post-quantum/blob/main/docs/permafrost-whitepaper.pdf)
+and the runnable [`examples/`](examples/) for the full protocol.
+
+> [!WARNING]
+> Threshold ML-DSA / Permafrost is **not** part of FIPS-204 and has **not** been
+> independently audited. Applicable findings from the threshold ML-DSA reference audit
+> were applied, but the port itself is unaudited — do not use for production custody
+> without formal review.
+
 ### hybrid: XWing, KitchenSink and others
 
 ```js
@@ -203,7 +259,7 @@ import {
   ml_kem768_x25519, ml_kem768_p256, ml_kem1024_p384,
   KitchenSink_ml_kem768_x25519, XWing,
   QSF_ml_kem768_p256, QSF_ml_kem1024_p384,
-} from '@noble/post-quantum/hybrid.js';
+} from '@dacely/noble-post-quantum/hybrid.js';
 ```
 
 Hybrid submodule combine post-quantum algorithms with elliptic curve cryptography:
@@ -251,9 +307,13 @@ For [hashes](https://github.com/paulmillr/noble-hashes), use SHA512 or SHA3-512 
 
 The library has not been independently audited yet.
 
-- at version 0.6.1, in Apr 2026, it was audited by ourselves (self-audited)
-  - Scope: everything
-  - [Changes since audit](https://github.com/paulmillr/noble-post-quantum/compare/0.6.1..main)
+- The **upstream** `noble-post-quantum` core (ML-KEM, ML-DSA, SLH-DSA, Falcon, hybrid) was
+  self-audited by its author at version `0.6.1` (Apr 2026, scope: everything). This fork
+  tracks that audited core unchanged — see
+  [upstream changes since audit](https://github.com/paulmillr/noble-post-quantum/compare/0.6.1..main).
+- The **Threshold ML-DSA** addition in this fork is **not** covered by that audit and is not
+  part of FIPS-204. Applicable findings from the threshold ML-DSA reference audit were applied
+  in `threshold-ml-dsa.ts`, but the port itself is unaudited.
 
 If you see anything unusual: investigate and report.
 
@@ -265,19 +325,19 @@ Keep in mind that even hardware versions ML-KEM [are vulnerable](https://eprint.
 
 ### Supply chain security
 
-- **Commits** are signed with PGP keys to prevent forgery. Be sure to verify the commit signatures
-- **Releases** are made transparently through token-less GitHub CI and Trusted Publishing. Be sure to verify the [provenance logs](https://docs.npmjs.com/generating-provenance-statements) for authenticity.
+- **Releases** are published through GitHub CI with npm Trusted Publishing / provenance. Be sure to verify the [provenance logs](https://docs.npmjs.com/generating-provenance-statements) for authenticity.
 - **Rare releasing** is practiced to minimize the need for re-audits by end-users.
 - **Dependencies** are minimized and strictly pinned to reduce supply-chain risk.
   - We use as few dependencies as possible.
   - Version ranges are locked, and changes are checked with npm-diff.
 - **Dev dependencies** are excluded from end-user installs; they're only used for development and build steps.
 
-For this package, there are 2 dependencies; and a few dev dependencies:
+For this package, there are 3 dependencies; and a few dev dependencies:
 
 - [noble-hashes](https://github.com/paulmillr/noble-hashes) provides cryptographic hashing functionality, used internally in every algorithm
 - [noble-curves](https://github.com/paulmillr/noble-curves) provides elliptic curve cryptography for hybrid algorithms
-- jsbt is used for benchmarking / testing / build tooling and developed by the same author
+- [noble-ciphers](https://github.com/paulmillr/noble-ciphers) provides authenticated encryption used by hybrid combiners
+- jsbt is used for benchmarking / testing / build tooling
 - prettier, fast-check and typescript are used for code quality / test generation / ts compilation
 
 ### Randomness
@@ -291,7 +351,7 @@ Browsers have had weaknesses in the past - and could again - but implementing a 
 ## Contributing & testing
 
 - `npm install && npm run build && npm test` will build the code and run tests.
-- `npm run lint` / `npm run format` will run linter / fix linter issues.
+- `npm run format` will fix formatting issues.
 - `npm run bench` will run benchmarks
 - `npm run build:release` will build single file
 
@@ -300,7 +360,7 @@ for general coding practices and rules.
 
 See [paulmillr.com/noble](https://paulmillr.com/noble/)
 for useful resources, articles, documentation and demos
-related to the library.
+related to the upstream library.
 
 ## Speed
 
@@ -360,10 +420,30 @@ Key and signature sizes:
 | SLH-DSA-256s | 64 | 128 | 29792 |
 
 
+## Contributors & credits
+
+This package builds on the work of several upstream projects and contributors:
+
+- **[paulmillr/noble-post-quantum](https://github.com/paulmillr/noble-post-quantum)** by
+  [Paul Miller](https://paulmillr.com) — the audited ML-KEM / ML-DSA / SLH-DSA / Falcon /
+  hybrid core. This fork tracks it directly and keeps it unchanged.
+- **[btc-vision](https://github.com/btc-vision)** — original authors of the **Threshold
+  ML-DSA ("Permafrost")** implementation: the distributed key generation (DKG) protocol,
+  the threshold signing rounds, the RFC-faithful `ml-dsa-primitives` extraction, the test
+  suite, and the accompanying whitepapers under [`docs/`](docs/). The Threshold ML-DSA
+  module in this repository is derived from their contribution.
+- **[Dacely Cloud](https://github.com/dacely-cloud)** — maintains this fork: rebases the
+  threshold work onto the upstream official release and publishes `@dacely/noble-post-quantum`.
+
+> The threshold primitives are a fork-time snapshot of upstream's polynomial math. If upstream
+> ships a behavioral fix to its primitives, `ml-dsa-primitives.ts` must be manually re-synced.
+
 ## License
 
 The MIT License (MIT)
 
-Copyright (c) 2024 Paul Miller [(https://paulmillr.com)](https://paulmillr.com)
+Copyright (c) 2024 Paul Miller [(https://paulmillr.com)](https://paulmillr.com) (upstream noble-post-quantum)
+Copyright (c) 2026 btc-vision (Threshold ML-DSA / Permafrost contribution)
+Copyright (c) 2026 Dacely Cloud (fork maintenance)
 
 See LICENSE file.
